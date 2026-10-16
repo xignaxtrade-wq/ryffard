@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { width: 1200px; height: 630px; overflow: hidden; font-family: 'Inter', system-ui, sans-serif; background: #1a1a2e; }
+
+    .bg {
+      width: 1200px; height: 630px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; padding: 60px 80px; gap: 60px;
+    }
+
+    /* Decorative circles */
+    .circle1 {
+      position: absolute; width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(217,11,36,0.15) 0%, transparent 70%);
+      top: -100px; right: -100px;
+    }
+    .circle2 {
+      position: absolute; width: 300px; height: 300px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,179,0,0.12) 0%, transparent 70%);
+      bottom: -50px; left: 200px;
+    }
+    .dot-grid {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+
+    /* Left content */
+    .left { flex: 1; position: relative; z-index: 2; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(217,11,36,0.2); border: 1px solid rgba(217,11,36,0.4);
+      border-radius: 50px; padding: 6px 16px; margin-bottom: 28px;
+      color: #FF6678; font-size: 14px; font-weight: 600;
+    }
+    .badge-dot { width: 8px; height: 8px; border-radius: 50%; background: #D90B24; animation: none; }
+
+    .logo-row {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+    }
+    .logo-icon {
+      width: 260px; height: 130px; object-fit: contain; object-position: left center;
+    }
+
+    .tagline {
+      font-size: 28px; font-weight: 800; color: #fff;
+      line-height: 1.3; margin-bottom: 16px;
+    }
+    .tagline em { font-style: normal; color: #FFC400; }
+
+    .sub {
+      font-size: 17px; color: rgba(255,255,255,0.55);
+      line-height: 1.5; margin-bottom: 36px; max-width: 480px;
+    }
+
+    .pills { display: flex; gap: 10px; flex-wrap: wrap; }
+    .pill {
+      display: flex; align-items: center; gap: 7px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 50px; padding: 8px 16px;
+      color: rgba(255,255,255,0.8); font-size: 14px; font-weight: 600;
+    }
+    .pill-icon { font-size: 16px; }
+
+    /* Right: ticket grid visual */
+    .right {
+      position: relative; z-index: 2; width: 320px; flex-shrink: 0;
+    }
+    .ticket-card {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px; padding: 24px; backdrop-filter: blur(10px);
+    }
+    .ticket-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+    }
+    .ticket-img {
+      width: 48px; height: 48px; border-radius: 10px;
+      background: linear-gradient(135deg, #004BCC, #ffc107);
+    }
+    .ticket-title { font-size: 15px; font-weight: 700; color: #fff; }
+    .ticket-price { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+
+    .num-grid {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 16px;
+    }
+    .num {
+      width: 40px; height: 36px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
+    .num.free     { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
+    .num.paid     { background: rgba(0,200,83,0.25);    color: #00c853; }
+    .num.reserved { background: rgba(255,193,7,0.25);   color: #ffc107; }
+    .num.selected { background: linear-gradient(135deg, #D90B24, #FFC400); color: #fff; }
+
+    .progress-bar-bg {
+      background: rgba(255,255,255,0.1); border-radius: 50px; height: 8px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; width: 62%;
+      background: linear-gradient(90deg, #D90B24, #FFC400); border-radius: 50px;
+    }
+    .progress-text { display: flex; justify-content: space-between; margin-top: 8px; }
+    .progress-text span { font-size: 12px; color: rgba(255,255,255,0.5); }
+    .progress-text strong { font-size: 12px; color: #FFC400; font-weight: 700; }
+
+    .url-bar {
+      margin-top: 20px; background: rgba(217,11,36,0.15);
+      border: 1px solid rgba(217,11,36,0.3); border-radius: 10px;
+      padding: 10px 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .url-bar span { font-size: 13px; color: rgba(255,255,255,0.6); }
+    .url-bar strong { font-size: 13px; color: #FF6678; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="bg">
+    <div class="dot-grid"></div>
+    <div class="circle1"></div>
+    <div class="circle2"></div>
+
+    <!-- Left -->
+    <div class="left">
+      <div class="badge">
+        <div class="badge-dot"></div>
+        Plataforma #1 de Rifas en RD
+      </div>
+
+      <div class="logo-row">
+        <strong style="font-size:64px;color:#fff">Ryffas<span style="color:#FFC400">RD</span></strong>
+      </div>
+
+      <div class="tagline">
+        Crea tu rifa digital<br />
+        en <em>minutos</em>
+      </div>
+
+      <div class="sub">
+        Talonario digital · Sorteo certificado · Multi-premio<br />
+        Integración WhatsApp · Desde <strong style="color:#fff">RD$0 gratis</strong>
+      </div>
+
+      <div class="pills">
+        <div class="pill"><span class="pill-icon">✅</span> 100% Digital</div>
+        <div class="pill"><span class="pill-icon">🔒</span> Sorteo Seguro</div>
+        <div class="pill"><span class="pill-icon">💬</span> WhatsApp</div>
+        <div class="pill"><span class="pill-icon">🏆</span> Multi-Premio</div>
+      </div>
+    </div>
+
+    <!-- Right: demo ticket -->
+    <div class="right">
+      <div class="ticket-card">
+        <div class="ticket-header">
+          <div class="ticket-img"></div>
+          <div>
+            <div class="ticket-title">PlayStation 5 + Juegos</div>
+            <div class="ticket-price">RD$150 por número</div>
+          </div>
+        </div>
+
+        <div class="num-grid">
+          <div class="num paid">001</div>
+          <div class="num paid">002</div>
+          <div class="num free">003</div>
+          <div class="num reserved">004</div>
+          <div class="num free">005</div>
+          <div class="num selected">006</div>
+          <div class="num free">007</div>
+          <div class="num paid">008</div>
+          <div class="num free">009</div>
+          <div class="num free">010</div>
+          <div class="num paid">011</div>
+          <div class="num selected">012</div>
+          <div class="num free">013</div>
+          <div class="num free">014</div>
+          <div class="num reserved">015</div>
+          <div class="num paid">016</div>
+          <div class="num free">017</div>
+          <div class="num free">018</div>
+        </div>
+
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill"></div>
+        </div>
+        <div class="progress-text">
+          <span>310 / 500 vendidos</span>
+          <strong>62%</strong>
+        </div>
+
+        <div class="url-bar">
+          <span>🔗</span>
+          <strong>sorteosrd-2.vercel.app/rifa/...</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
