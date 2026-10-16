@@ -2,6 +2,12 @@
 
 Destination repository: https://github.com/xignaxtrade-wq/ryffard
 
+Railway site: https://ryffard-production.up.railway.app
+
+Railway project: f34dc19e-b0e3-4e47-b638-521e025135ca
+
+Railway service: c217e18d-543a-48a7-8dfe-68e7d136d47a
+
 Supabase project: npqmxtkyhkcochaydknu
 
 The complete `supabase-schema.sql` was applied to the new, initially empty
@@ -26,6 +32,7 @@ Required service variables:
 
 Set the Supabase Auth Site URL to the public Railway URL and allow its
 `/reset-password` redirect. Never commit `.env.local` or server secrets.
+Both production authentication URLs were configured and verified on 2026-10-16.
 
 Source snapshot includes the RyffasRD name, official logo, red/blue/gold palette,
 QR ticket verification and private payment receipts. Local-only caches,

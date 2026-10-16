@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /dashboard
 
-Sitemap: https://sorteosrd-2.vercel.app/sitemap.xml
+Sitemap: https://ryffard-production.up.railway.app/sitemap.xml

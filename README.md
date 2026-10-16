@@ -1,12 +1,12 @@
 # RyffasRD
 
-SPA para crear, vender y administrar rifas digitales. Usa React, Vite, Supabase, Vercel Functions y una integración opcional con Anthropic.
+SPA para crear, vender y administrar rifas digitales. Usa React, Vite, Supabase, un servidor Node en Railway y una integración opcional con Anthropic.
 
 ## Requisitos
 
 - Node.js 20+
 - Proyecto de Supabase
-- Cuenta de Vercel para el despliegue
+- Cuenta de Railway para el despliegue
 
 ## Instalación
 
@@ -39,7 +39,7 @@ Variables públicas de Vite:
 - `VITE_APP_URL`
 - `VITE_STRIPE_BASIC_LINK` y `VITE_STRIPE_PRO_LINK`, opcionales
 
-Variables exclusivas de Vercel:
+Variables exclusivas del servidor:
 
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
@@ -58,7 +58,9 @@ Este comando ejecuta lint, pruebas unitarias y compilación de producción. GitH
 
 ## Despliegue
 
-Importa el repositorio en Vercel, configura las variables anteriores y despliega. `vercel.json` conserva rutas de la SPA; `/api/cuadre` requiere una sesión válida de Supabase.
+Conecta `xignaxtrade-wq/ryffard` a Railway. Configura `npm run build` como compilación, `npm start` como inicio, `/healthz` como comprobación y `PORT=3000`. El servidor conserva las rutas de la SPA; `/api/cuadre` requiere una sesión válida de Supabase y la clave opcional de Anthropic.
+
+Sitio: https://ryffard-production.up.railway.app
 
 Antes de abrir al público:
 

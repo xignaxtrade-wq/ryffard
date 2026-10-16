@@ -20,7 +20,7 @@ function Modal({ onClose, children }) {
 // ── WhatsApp modal ────────────────────────────────────────────────────────────
 function WhatsAppModal({ onClose, referralCode, selected: _selected }) {
   const msg = encodeURIComponent(
-    `¡Participa en la rifa de ${DEMO_RIFA.name}!\n\nTicket: RD$${DEMO_RIFA.price}\nSorteo: 20 Abril 2026\n\nEscoge tus números aquí:\nhttps://sorteosrd.com/rifa/demo\n\nUsa mi código de referido: ${referralCode} y obtendrás un descuento especial!`
+    `¡Participa en la rifa de ${DEMO_RIFA.name}!\n\nTicket: RD$${DEMO_RIFA.price}\nSorteo: 20 Abril 2026\n\nEscoge tus números aquí:\nhttps://ryffard-production.up.railway.app/rifa/demo\n\nUsa mi código de referido: ${referralCode} y obtendrás un descuento especial!`
   )
   return (
     <Modal onClose={onClose}>
@@ -97,7 +97,7 @@ function ReferralModal({ onClose, referralCode, referralCount }) {
 // ── Widget modal ──────────────────────────────────────────────────────────────
 function WidgetModal({ onClose, progress }) {
   const [copied, setCopied] = useState(false)
-  const code = `<iframe src="https://sorteosrd.com/widget/demo" width="340" height="190" frameborder="0" style="border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1)"></iframe>`
+  const code = `<iframe src="https://ryffard-production.up.railway.app/widget/demo" width="340" height="190" frameborder="0" style="border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1)"></iframe>`
   const copy = () => { navigator.clipboard?.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000) }
 
   return (
@@ -123,7 +123,7 @@ function WidgetModal({ onClose, progress }) {
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 12, color: 'rgba(255,255,255,0.8)' }}>
           <span>${DEMO_RIFA.price}/ticket</span>
-          <span>sorteosrd.com</span>
+          <span>RyffasRD</span>
         </div>
       </div>
 

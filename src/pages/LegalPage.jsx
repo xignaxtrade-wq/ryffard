@@ -18,7 +18,7 @@ const CONTENT = {
       ['Finalidad', 'Usamos los datos para autenticar usuarios, operar rifas, prevenir fraude, brindar soporte y cumplir obligaciones legales. No vendemos información personal.'],
       ['Conservación y seguridad', 'Conservamos la información mientras la cuenta esté activa o sea necesaria por obligaciones legales. Aplicamos controles de acceso y políticas de seguridad a nivel de base de datos.'],
       ['Terceros', 'Supabase, Vercel y los proveedores de pago o inteligencia artificial pueden procesar datos estrictamente necesarios bajo sus propias condiciones y medidas de seguridad.'],
-      ['Tus derechos', 'Puedes solicitar acceso, corrección o eliminación escribiendo a soporte@sorteosrd.com. Algunas operaciones podrán conservarse cuando exista obligación legal.'],
+      ['Tus derechos', 'Puedes solicitar acceso, corrección o eliminación mediante el WhatsApp de soporte +1 809 907 4452. Algunas operaciones podrán conservarse cuando exista obligación legal.'],
     ],
   },
 }
