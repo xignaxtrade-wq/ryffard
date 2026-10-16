@@ -58,7 +58,7 @@ export default function RegisterPage() {
       <div style={{ width: '100%', maxWidth: 440 }}>
 
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{ width: 56, height: 56, background: C.gradient, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 24, fontWeight: 900, color: '#fff' }}>S</div>
+          <img src="/logo-ryffasrd.png" alt="RyffasRD" width="96" height="96" style={{ display: 'block', objectFit: 'contain', margin: '0 auto 16px' }} />
           <h1 style={{ fontSize: 28, fontWeight: 900, color: 'var(--dark)', marginBottom: 8 }}>Crea tu cuenta gratis</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: 15 }}>Empieza a organizar rifas profesionales hoy</p>
         </div>
