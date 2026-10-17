@@ -89,8 +89,8 @@ function Overview({ rifas, setActive, profile }) {
         ))}
       </div>
 
-      <div style={{ background: 'var(--card)', borderRadius: 16, padding: 28, boxShadow: 'var(--shadow)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <div className="dashboard-panel" style={{ background: 'var(--card)', borderRadius: 16, padding: 28, boxShadow: 'var(--shadow)' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--dark)' }}>Rifas Recientes</h3>
           <button onClick={() => setActive('create')} className="btn-primary" style={{ padding: '8px 16px', fontSize: 13, borderRadius: 10 }}>
             <i className="fas fa-plus" style={{ marginRight: 6 }} />Nueva Rifa
@@ -816,7 +816,7 @@ function CreateRifa({ setActive, onCreated, user, profile, rifas, isTest }) {
   return (
     <>
       <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--dark)', marginBottom: 32 }}>Crear Nueva Rifa</h1>
-      <div style={{ background: 'var(--card)', borderRadius: 20, padding: 36, maxWidth: 640, boxShadow: 'var(--shadow)' }}>
+      <div className="dashboard-panel" style={{ background: 'var(--card)', borderRadius: 20, padding: 36, maxWidth: 640, boxShadow: 'var(--shadow)' }}>
         <form onSubmit={handleSubmit} noValidate>
 
           <div style={{ marginBottom: 20 }}>{lbl('Nombre del Premio', true)}
@@ -848,7 +848,7 @@ function CreateRifa({ setActive, onCreated, user, profile, rifas, isTest }) {
             <input type="text" value={form.prize3} onChange={e => setF('prize3', e.target.value)} placeholder="Opcional" style={IS} />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+          <div className="dashboard-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
             <div>{lbl('Precio por ticket (RD$)', true)}
               <input type="number" value={form.price} onChange={e => setF('price', e.target.value)} placeholder="150" style={IS} />
             </div>
@@ -1055,7 +1055,7 @@ function PaymentMethods({ user }) {
 
         {/* Formulario de agregar */}
         {showForm && (
-          <div style={{ background: 'var(--card)', borderRadius: 20, padding: 28, boxShadow: 'var(--shadow)', border: '1px solid var(--card-border)' }}>
+          <div className="dashboard-panel" style={{ background: 'var(--card)', borderRadius: 20, padding: 28, boxShadow: 'var(--shadow)', border: '1px solid var(--card-border)' }}>
             <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--dark)', marginBottom: 20 }}>Nuevo método de pago</h3>
 
             {/* Selector de tipo */}
@@ -1264,7 +1264,7 @@ function MyPlanPanel({ profile }) {
       </div>
 
       <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--dark)', marginBottom: 20 }}>Mejorar tu Plan</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 24 }}>
         {PLANS.filter(p => p.id !== 'demo').map(plan => (
            <div key={plan.id} style={{ background: 'var(--card)', borderRadius: 24, padding: 32, boxShadow: 'var(--shadow)', border: currentPlanId === plan.id ? `2px solid ${C.success}` : '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
              <h3 style={{ fontSize: 22, fontWeight: 800, color: 'var(--dark)' }}>{plan.label}</h3>
@@ -1345,10 +1345,10 @@ export default function DashboardPage() {
   useEffect(() => { loadRifas() }, [user, isTest])
 
   return (
-    <section style={{ minHeight: '100vh', background: 'var(--bg-alt)', paddingBottom: 70 }} className="page-enter">
+    <section style={{ minHeight: '100vh', background: 'var(--bg-alt)', paddingBottom: 70 }} className="page-enter dashboard-page">
       <div style={{ display: 'flex' }}>
         <Sidebar active={active} setActive={setActive} profile={profile} />
-        <main className="dashboard-main" style={{ flex: 1, padding: 32, overflow: 'auto' }}>
+        <main className="dashboard-main" style={{ flex: 1, minWidth: 0, padding: 32, overflow: 'auto' }}>
           <label style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 20 }}>
             <input type="checkbox" checked={isTest} onChange={event => {
               setIsTest(event.target.checked)

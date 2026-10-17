@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { C } from '../constants'
 
 export default function PWABanner() {
+  const { pathname } = useLocation()
   const [installPrompt, setInstallPrompt] = useState(null)
   const [visible, setVisible]             = useState(false)
 
@@ -25,7 +27,7 @@ export default function PWABanner() {
   if (!visible) return null
 
   return (
-    <div style={{
+    <div className={`pwa-install-banner${pathname === '/dashboard' ? ' pwa-install-dashboard' : ''}`} style={{
       position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
       background: 'var(--card)', borderRadius: 16, padding: '16px 24px',
       boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
