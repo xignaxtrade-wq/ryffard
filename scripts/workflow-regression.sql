@@ -48,6 +48,15 @@ begin
   insert into public.rifas(user_id,name,prize1,total,price)
     values (owner_id,'QA no payments','QA prize',50,100) returning id into unpaid_r;
 
+  insert into public.payment_methods(user_id,name,type,details) values
+    (owner_id,'PRUEBA Bitcoin','crypto','{"asset":"BTC","network":"bitcoin","wallet_address":"1BoatSLRHtKNngkdXEeobR76b53LETtpyT"}'),
+    (owner_id,'PRUEBA USDT BEP20','crypto','{"asset":"USDT","network":"bep20","wallet_address":"0x8ba1f109551bD432803012645Ac136ddd64DBA72"}');
+  perform pg_temp.check_true(exists(select 1 from jsonb_array_elements(public.public_rifa_details((select slug from public.rifas where id=r))->'payment_methods') method
+    where method->>'type'='crypto' and method->'details'->>'asset'='BTC' and method->'details'->>'network'='bitcoin'),'Public raffle includes Bitcoin reception details');
+  perform pg_temp.check_true(exists(select 1 from jsonb_array_elements(public.public_rifa_details((select slug from public.rifas where id=r))->'payment_methods') method
+    where method->>'type'='crypto' and method->'details'->>'asset'='USDT' and method->'details'->>'network'='bep20'),'Public raffle includes USDT BEP20 reception details');
+  perform pg_temp.check_true((select status='reserved' and payment_method='PRUEBA USDT BEP20' from public.reserve_tickets(future_r,array[9],'PRUEBA cripto','000',null,'PRUEBA USDT BEP20')),'Crypto reservation does not confirm payment automatically');
+
   perform pg_temp.expect_error(format('select public.reserve_tickets(%L,array[1,1],''Buyer'',''000'',null,''Banco QA'')',r),'invalida','Duplicate numbers rejected');
   perform pg_temp.expect_error(format('select public.reserve_tickets(%L,array[null::int],''Buyer'',''000'',null,''Banco QA'')',r),'invalida','Null numbers rejected');
   perform pg_temp.expect_error(format('select public.reserve_tickets(%L,array[51],''Buyer'',''000'',null,''Banco QA'')',r),'invalida','Out of range rejected');

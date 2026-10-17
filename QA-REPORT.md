@@ -29,8 +29,8 @@ Database: npqmxtkyhkcochaydknu
 
 ## Automated checks
 
-`npm run check`: lint, thirteen unit tests and production build pass.
-`scripts/workflow-regression.sql`: 49 database assertions pass after applied
+`npm run check`: lint, twenty-one unit tests and production build pass.
+`scripts/workflow-regression.sql`: 52 database assertions pass after applied
 corrections, including actual anon INSERT and owner/other-account SELECT Storage
 RLS, reservation validation/expiry, plan caps, payment permissions/idempotency,
 draw timing/paid-only eligibility and private-data isolation. Fixtures roll back.
@@ -74,3 +74,24 @@ The transfer selector now includes Banco BHD (one entry with its legacy alias),
 Banco Popular Dominicano, Scotiabank Republica Dominicana and Asociacion Duarte,
 alongside previously available institutions. Otro banco requires a name.
 Official naming sources and legacy compatibility are documented in BANKS.md.
+
+## Bitcoin and USDT BEP20 reception
+
+Added crypto methods with public receiving address and locally generated QR:
+Bitcoin mainnet (legacy, SegWit and Taproot) and USDT on BNB Smart Chain (BEP20).
+Bitcoin QR uses a bitcoin: URI without amount. USDT QR contains the public EVM
+address, with the BEP20 network explicitly displayed next to it. No automatic
+RD$ conversion, payment initiation, signing, private keys or chain monitoring.
+The organizer must agree the crypto amount and manually review the receipt.
+
+Bitcoin checksum/network parsing uses bitcoinjs-lib 7.0.4; EVM validation uses
+ethers 6.17.0 and rejects malformed checksums and the zero address. Tests decode
+both QR payloads using jsQR. RPC regression fixtures exercise crypto method
+storage/public details and reservation without automatic payment, then roll back.
+Format validation cannot prove wallet ownership or which networks an exchange
+supports. No real receiving address was supplied or substituted by this audit.
+
+Dependency installation and clean npm ci succeeded. npm audit still reports
+existing dependency alerts, including tar 6.2.1, node-pre-gyp 1.0.11 and router
+6.30.4; these versions match the pre-change lockfile. No force-upgrade of unrelated
+dependencies was performed. They remain a separate dependency-remediation task.

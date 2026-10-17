@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabase'
 import { C, RIFA_CATEGORIES } from '../constants'
 import { useSEO } from '../hooks'
 import { useAuth } from '../context/AuthContext'
+import CryptoPaymentDetails from '../components/CryptoPaymentDetails'
+import { cryptoPaymentDetails } from '../lib/cryptoPayments'
 
 const fmt = (n) => `RD$${Number(n).toLocaleString()}`
 const SITE_URL = import.meta.env.VITE_APP_URL || window.location.origin
@@ -169,6 +171,9 @@ export default function RifaPage() {
       payLine += `\n   Tipo: ${t}\n   Cuenta: ${m.details.account_number}\n   Titular: ${m.details.holder}${ced}`
     } else if (m?.type === 'paypal' && m.details?.email) {
       payLine += `\n   PayPal: ${m.details.email}`
+    } else if (m?.type === 'crypto') {
+      const payment = cryptoPaymentDetails(m)
+      if (payment) payLine += `\n   Red: ${payment.networkLabel}\n   Wallet: ${payment.wallet}\n   Importe cripto a acordar; precio expresado en RD$.`
     }
 
     const msg = encodeURIComponent(
@@ -284,6 +289,7 @@ export default function RifaPage() {
                   Envía el pago a: <strong>{sel.details.email}</strong>
                 </div>
               )}
+              {sel?.type === 'crypto' && <CryptoPaymentDetails method={sel} />}
               {(!sel || sel.type === 'custom') && form.payment_method && (
                 <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
                   Método: <strong>{form.payment_method}</strong>. Coordina los detalles por WhatsApp con el organizador.
@@ -403,6 +409,7 @@ export default function RifaPage() {
                           <strong>PayPal:</strong> {sel.details.email}
                         </div>
                       )}
+                      {sel.type === 'crypto' && <CryptoPaymentDetails method={sel} />}
                       {sel.type === 'custom' && (
                         <div style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
                           <i className="fas fa-money-bill-wave" style={{ marginRight: 8, color: C.success }} />

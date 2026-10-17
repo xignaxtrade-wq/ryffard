@@ -10,7 +10,7 @@ Never run selected fragments: the enclosing transaction is the isolation boundar
 The suite creates disposable QA identities, payment instructions, raffles, tickets,
 receipt metadata and draw results. It ends with `ROLLBACK`, including Auth rows.
 No email is sent, no money moves and no raffle appears to other sessions.
-The expected result is 49 passing assertions; any failed assertion aborts the run.
+The expected result is 52 passing assertions; any failed assertion aborts the run.
 If an error interrupts the transaction, issue `ROLLBACK` before running it again.
 
 This verifies database behavior and an anonymous Storage INSERT policy, not actual

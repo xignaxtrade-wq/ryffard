@@ -9,6 +9,8 @@ import Confetti from '../components/Confetti'
 import WhiteLabelSettings from '../components/WhiteLabelSettings'
 import { paymentMethodError } from '../lib/paymentValidation'
 import { BANKS_RD, bankDisplayName, selectedBankName } from '../constants/banks'
+import { CRYPTO_ASSETS, createCryptoMethod } from '../lib/cryptoPayments'
+import CryptoPaymentDetails from '../components/CryptoPaymentDetails'
 
 const fmt = (n) => `RD$${Number(n).toLocaleString()}`
 
@@ -906,12 +908,14 @@ function CreateRifa({ setActive, onCreated, user, profile, rifas, isTest }) {
 
 // ── Payment Methods ───────────────────────────────────────────────────────────
 const METHOD_ICON = {
+  crypto: { cls: 'fab fa-bitcoin', color: '#b77900', bg: 'rgba(255,196,0,0.12)' },
   bank:   { cls: 'fas fa-university',   color: '#1a73e8', bg: 'rgba(26,115,232,0.1)'  },
   paypal: { cls: 'fab fa-paypal',       color: '#003087', bg: 'rgba(0,48,135,0.08)'   },
   custom: { cls: 'fas fa-money-bill-wave', color: '#00c853', bg: 'rgba(0,200,83,0.1)' },
 }
 
 function methodSubtitle(m) {
+  if (m.type === 'crypto') return m.details?.asset === 'BTC' ? 'Red Bitcoin' : 'BNB Smart Chain (BEP20)'
   if (m.type === 'bank' && m.details) {
     const t = { ahorros: 'Ahorros', corriente: 'Corriente', nomina: 'Nómina' }[m.details.account_type] || m.details.account_type
     const ced = m.details.cedula ? ` • Cédula: ${m.details.cedula}` : ''
@@ -928,7 +932,7 @@ function PaymentMethods({ user }) {
   const [formType, setFormType] = useState('bank')
   const [form, setForm] = useState({
     bank: 'BANRESERVAS', other_bank: '', account_type: 'ahorros',
-    account_number: '', holder: '', cedula: '', paypal_email: '', custom_label: '',
+    account_number: '', holder: '', cedula: '', paypal_email: '', custom_label: '', crypto_asset: 'BTC', wallet_address: '',
   })
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
@@ -951,6 +955,9 @@ function PaymentMethods({ user }) {
       if (!name) { setError('Selecciona un banco e indica su nombre si eliges Otro banco'); setSaving(false); return }
       type    = 'bank'
       details = { account_type: form.account_type, account_number: form.account_number.trim(), holder: form.holder.trim(), cedula: form.cedula.trim() }
+    } else if (formType === 'crypto') {
+      try { ({ name, type, details } = createCryptoMethod(form.crypto_asset, form.wallet_address)) }
+      catch (walletError) { setError(walletError.message); setSaving(false); return }
     } else if (formType === 'paypal') {
       if (!form.paypal_email.trim()) {
         setError('Email o link de PayPal es requerido'); setSaving(false); return
@@ -972,7 +979,7 @@ function PaymentMethods({ user }) {
     const { error: err } = await supabase.from('payment_methods').insert({ user_id: user.id, name, type, details })
     if (err) { setError(err.message); setSaving(false); return }
     setShowForm(false)
-    setForm({ bank: 'BANRESERVAS', other_bank: '', account_type: 'ahorros', account_number: '', holder: '', cedula: '', paypal_email: '', custom_label: '' })
+    setForm({ bank: 'BANRESERVAS', other_bank: '', account_type: 'ahorros', account_number: '', holder: '', cedula: '', paypal_email: '', custom_label: '', crypto_asset: 'BTC', wallet_address: '' })
     await loadMethods()
     setSaving(false)
   }
@@ -1014,6 +1021,7 @@ function PaymentMethods({ user }) {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--dark)' }}>{m.type === 'bank' ? bankDisplayName(m.name) : m.name}</div>
                         <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>{methodSubtitle(m)}</div>
+                        {m.type === 'crypto' && <CryptoPaymentDetails method={m} compact />}
                       </div>
                       <button onClick={() => deleteMethod(m.id)}
                         style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px 10px', borderRadius: 8, fontSize: 16 }}>
@@ -1048,10 +1056,11 @@ function PaymentMethods({ user }) {
             <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--dark)', marginBottom: 20 }}>Nuevo método de pago</h3>
 
             {/* Selector de tipo */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(110px,1fr))', gap: 8, marginBottom: 24 }}>
               {[
                 { id: 'bank',   label: 'Banco / Transferencia', cls: 'fas fa-university'    },
                 { id: 'paypal', label: 'PayPal',                cls: 'fab fa-paypal'         },
+                { id: 'crypto', label: 'Criptomonedas',         cls: 'fab fa-bitcoin'        },
                 { id: 'custom', label: 'Otro (Zelle, etc.)',    cls: 'fas fa-money-bill-wave'},
               ].map(t => (
                 <button key={t.id} onClick={() => setFormType(t.id)}
@@ -1103,6 +1112,19 @@ function PaymentMethods({ user }) {
                 </div>
               </div>
             )}
+
+            {formType === 'crypto' && <div style={{ display: 'grid', gap: 14 }}>
+              <label htmlFor="crypto-asset">Criptomoneda y red *</label>
+              <select id="crypto-asset" value={form.crypto_asset} onChange={event => setForm(previous => ({ ...previous, crypto_asset: event.target.value, wallet_address: '' }))} style={IS}>
+                {CRYPTO_ASSETS.map(asset => <option key={asset.id} value={asset.id}>{asset.name} - {asset.networkLabel}</option>)}
+              </select>
+              <label htmlFor="crypto-wallet">Dirección pública de recepción *</label>
+              <input id="crypto-wallet" type="text" autoComplete="off" spellCheck={false} value={form.wallet_address} onChange={event => setForm(previous => ({ ...previous, wallet_address: event.target.value }))} placeholder={form.crypto_asset === 'BTC' ? 'bc1... / 1... / 3...' : '0x...'} style={IS} />
+              {(() => {
+                try { return form.wallet_address.trim() ? <CryptoPaymentDetails method={createCryptoMethod(form.crypto_asset, form.wallet_address)} compact /> : null }
+                catch { return null }
+              })()}
+            </div>}
 
             {formType === 'paypal' && (
               <div>
