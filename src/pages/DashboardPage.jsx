@@ -8,6 +8,7 @@ import CuadreIA from '../components/CuadreIA'
 import Confetti from '../components/Confetti'
 import WhiteLabelSettings from '../components/WhiteLabelSettings'
 import { paymentMethodError } from '../lib/paymentValidation'
+import { BANKS_RD, bankDisplayName, selectedBankName } from '../constants/banks'
 
 const fmt = (n) => `RD$${Number(n).toLocaleString()}`
 
@@ -904,13 +905,6 @@ function CreateRifa({ setActive, onCreated, user, profile, rifas, isTest }) {
 }
 
 // ── Payment Methods ───────────────────────────────────────────────────────────
-const BANKS_RD = [
-  'BANRESERVAS', 'BANCO POPULAR DOMINICANO', 'BANCO BHD LEÓN',
-  'SCOTIABANK RD', 'BANCO SANTA CRUZ', 'BANCO CARIBE',
-  'BANCO VIMENCA', 'BANCO LAFISE', 'APAP', 'ADEMI',
-  'BANCO ADOPEM', 'OTRO',
-]
-
 const METHOD_ICON = {
   bank:   { cls: 'fas fa-university',   color: '#1a73e8', bg: 'rgba(26,115,232,0.1)'  },
   paypal: { cls: 'fab fa-paypal',       color: '#003087', bg: 'rgba(0,48,135,0.08)'   },
@@ -933,7 +927,7 @@ function PaymentMethods({ user }) {
   const [showForm, setShowForm] = useState(false)
   const [formType, setFormType] = useState('bank')
   const [form, setForm] = useState({
-    bank: 'BANRESERVAS', account_type: 'ahorros',
+    bank: 'BANRESERVAS', other_bank: '', account_type: 'ahorros',
     account_number: '', holder: '', cedula: '', paypal_email: '', custom_label: '',
   })
   const [saving, setSaving] = useState(false)
@@ -953,7 +947,8 @@ function PaymentMethods({ user }) {
     let name, type, details
 
     if (formType === 'bank') {
-      name    = form.bank
+      name    = selectedBankName(form.bank, form.other_bank)
+      if (!name) { setError('Selecciona un banco e indica su nombre si eliges Otro banco'); setSaving(false); return }
       type    = 'bank'
       details = { account_type: form.account_type, account_number: form.account_number.trim(), holder: form.holder.trim(), cedula: form.cedula.trim() }
     } else if (formType === 'paypal') {
@@ -977,7 +972,7 @@ function PaymentMethods({ user }) {
     const { error: err } = await supabase.from('payment_methods').insert({ user_id: user.id, name, type, details })
     if (err) { setError(err.message); setSaving(false); return }
     setShowForm(false)
-    setForm({ bank: 'BANRESERVAS', account_type: 'ahorros', account_number: '', holder: '', cedula: '', paypal_email: '', custom_label: '' })
+    setForm({ bank: 'BANRESERVAS', other_bank: '', account_type: 'ahorros', account_number: '', holder: '', cedula: '', paypal_email: '', custom_label: '' })
     await loadMethods()
     setSaving(false)
   }
@@ -1017,7 +1012,7 @@ function PaymentMethods({ user }) {
                         <i className={mi.cls} style={{ color: mi.color, fontSize: 18 }} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--dark)' }}>{m.name}</div>
+                        <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--dark)' }}>{m.type === 'bank' ? bankDisplayName(m.name) : m.name}</div>
                         <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>{methodSubtitle(m)}</div>
                       </div>
                       <button onClick={() => deleteMethod(m.id)}
@@ -1071,11 +1066,15 @@ function PaymentMethods({ user }) {
             {formType === 'bank' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
-                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--dark)', display: 'block', marginBottom: 6 }}>Banco *</label>
-                  <select value={form.bank} onChange={e => setForm(p => ({ ...p, bank: e.target.value }))} style={IS}>
-                    {BANKS_RD.map(b => <option key={b} value={b}>{b}</option>)}
+                  <label htmlFor="transfer-bank" style={{ fontSize: 13, fontWeight: 600, color: 'var(--dark)', display: 'block', marginBottom: 6 }}>Banco *</label>
+                  <select id="transfer-bank" value={form.bank} onChange={e => setForm(p => ({ ...p, bank: e.target.value }))} style={IS}>
+                    {BANKS_RD.map(bank => <option key={bank.value} value={bank.value}>{bank.label}</option>)}
                   </select>
                 </div>
+                {form.bank === 'OTRO' && <div>
+                  <label htmlFor="transfer-other-bank" style={{ display: 'block', marginBottom: 6 }}>Nombre del banco *</label>
+                  <input id="transfer-other-bank" type="text" value={form.other_bank} onChange={e => setForm(p => ({ ...p, other_bank: e.target.value }))} style={IS} />
+                </div>}
                 <div>
                   <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--dark)', display: 'block', marginBottom: 6 }}>Tipo de cuenta *</label>
                   <select value={form.account_type} onChange={e => setForm(p => ({ ...p, account_type: e.target.value }))} style={IS}>

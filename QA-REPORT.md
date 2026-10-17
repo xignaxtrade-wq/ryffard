@@ -29,7 +29,7 @@ Database: npqmxtkyhkcochaydknu
 
 ## Automated checks
 
-`npm run check`: lint, nine unit tests and production build pass.
+`npm run check`: lint, thirteen unit tests and production build pass.
 `scripts/workflow-regression.sql`: 49 database assertions pass after applied
 corrections, including actual anon INSERT and owner/other-account SELECT Storage
 RLS, reservation validation/expiry, plan caps, payment permissions/idempotency,
@@ -69,3 +69,8 @@ ambiguous duplicate method names in the UI. Load/delete errors are shown instead
 of silently hiding failed operations. No real bank method was created: the owner
 must supply bank, account type, holder and actual account number. Public email
 delivery remains pending a controlled inbox and production-ready SMTP setup.
+
+The transfer selector now includes Banco BHD (one entry with its legacy alias),
+Banco Popular Dominicano, Scotiabank Republica Dominicana and Asociacion Duarte,
+alongside previously available institutions. Otro banco requires a name.
+Official naming sources and legacy compatibility are documented in BANKS.md.

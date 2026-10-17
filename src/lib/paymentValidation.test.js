@@ -15,4 +15,7 @@ describe('manual transfer configuration', () => {
     expect(paymentMethodError(fixture)).toBe('')
     expect(fixture.details.account_number).toBe('0000')
   })
+  it('treats BHD and the saved BHD Leon name as the same choice', () => {
+    expect(paymentMethodError({ name: 'BANCO BHD', type: 'custom' }, [{ name: 'BANCO BHD LE\u00d3N' }])).not.toBe('')
+  })
 })
