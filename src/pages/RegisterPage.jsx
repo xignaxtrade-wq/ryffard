@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { C } from '../constants'
 import { useSEO } from '../hooks'
+import { MIN_PASSWORD_LENGTH, passwordError } from '../lib/authValidation'
 
 export default function RegisterPage() {
   useSEO({ title: 'Crear Cuenta Gratis', description: 'Regístrate gratis en RyffasRD y crea tu primera rifa digital en minutos.' })
@@ -19,7 +20,8 @@ export default function RegisterPage() {
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
-    if (password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres'); return }
+    const validationError = passwordError(password)
+    if (validationError) { setError(validationError); return }
     setLoading(true)
     try {
       await signUp(email, password, name, refCode)
@@ -95,7 +97,8 @@ export default function RegisterPage() {
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
+                placeholder="Mínimo 8 caracteres"
+                minLength={MIN_PASSWORD_LENGTH}
                 required
                 style={{ width: '100%', padding: '12px 16px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--bg-alt)', color: 'var(--dark)', fontSize: 15, outline: 'none', boxSizing: 'border-box' }}
               />

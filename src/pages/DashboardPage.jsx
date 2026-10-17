@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase'
 import CuadreIA from '../components/CuadreIA'
 import Confetti from '../components/Confetti'
 import WhiteLabelSettings from '../components/WhiteLabelSettings'
+import { paymentMethodError } from '../lib/paymentValidation'
 
 const fmt = (n) => `RD$${Number(n).toLocaleString()}`
 
@@ -941,7 +942,8 @@ function PaymentMethods({ user }) {
   useEffect(() => { loadMethods() }, [user])
 
   async function loadMethods() {
-    const { data } = await supabase.from('payment_methods').select('*').eq('user_id', user.id).order('created_at')
+    const { data, error: requestError } = await supabase.from('payment_methods').select('*').eq('user_id', user.id).order('created_at')
+    if (requestError) setError('No se pudieron cargar los métodos de pago: ' + requestError.message)
     setMethods(data || [])
     setLoading(false)
   }
@@ -951,9 +953,6 @@ function PaymentMethods({ user }) {
     let name, type, details
 
     if (formType === 'bank') {
-      if (!form.account_number.trim() || !form.holder.trim()) {
-        setError('Número de cuenta y titular son requeridos'); setSaving(false); return
-      }
       name    = form.bank
       type    = 'bank'
       details = { account_type: form.account_type, account_number: form.account_number.trim(), holder: form.holder.trim(), cedula: form.cedula.trim() }
@@ -973,6 +972,8 @@ function PaymentMethods({ user }) {
       details = {}
     }
 
+    const validationError = paymentMethodError({ name, type, details }, methods)
+    if (validationError) { setError(validationError); setSaving(false); return }
     const { error: err } = await supabase.from('payment_methods').insert({ user_id: user.id, name, type, details })
     if (err) { setError(err.message); setSaving(false); return }
     setShowForm(false)
@@ -982,7 +983,9 @@ function PaymentMethods({ user }) {
   }
 
   async function deleteMethod(id) {
-    await supabase.from('payment_methods').delete().eq('id', id)
+    setError('')
+    const { error: requestError } = await supabase.from('payment_methods').delete().eq('id', id)
+    if (requestError) { setError('No se pudo eliminar el método: ' + requestError.message); return }
     setMethods(prev => prev.filter(m => m.id !== id))
   }
 
@@ -996,6 +999,7 @@ function PaymentMethods({ user }) {
       </p>
 
       <div style={{ maxWidth: 640 }}>
+        {error && <div role="alert" style={{ color: '#b42318', marginBottom: 16 }}>{error}</div>}
         {loading ? (
           <div style={{ textAlign: 'center', padding: 40 }}>
             <i className="fas fa-spinner fa-spin" style={{ color: C.primary, fontSize: 24 }} />
@@ -1119,12 +1123,6 @@ function PaymentMethods({ user }) {
                 <input type="text" value={form.custom_label}
                   onChange={e => setForm(p => ({ ...p, custom_label: e.target.value }))}
                   placeholder="Ej: ZELLE, WESTERN UNION, EFECTIVO" style={IS} />
-              </div>
-            )}
-
-            {error && (
-              <div style={{ background: 'rgba(255,101,101,0.1)', border: '1px solid rgba(255,101,101,0.3)', borderRadius: 10, padding: '10px 14px', marginTop: 16, color: '#ff6565', fontSize: 14 }}>
-                <i className="fas fa-circle-exclamation" style={{ marginRight: 8 }} />{error}
               </div>
             )}
 

@@ -29,7 +29,7 @@ Database: npqmxtkyhkcochaydknu
 
 ## Automated checks
 
-`npm run check`: lint, four unit assertions and production build pass.
+`npm run check`: lint, nine unit tests and production build pass.
 `scripts/workflow-regression.sql`: 49 database assertions pass after applied
 corrections, including actual anon INSERT and owner/other-account SELECT Storage
 RLS, reservation validation/expiry, plan caps, payment permissions/idempotency,
@@ -53,3 +53,19 @@ testing or independent certification of randomness. Real bank settlement,
 public signup/recovery email delivery, historical-data recovery, optional AI
 credentials, physical tombola result entry and prize delivery remain separate
 verification or implementation tasks. No claim of 100 percent completion.
+
+## Registration, recovery and transfer follow-up
+
+Public Auth settings were read without secrets: email sign-in and public signup
+are enabled, and email confirmation is required. Site URL is the Railway origin;
+the exact /reset-password redirect is allowed. Custom SMTP is disabled. The
+connected Resend service has no domains or inboxes available for controlled tests.
+Ronny's successful email confirmation is user-reported evidence, not a new
+end-to-end delivery test performed by this audit. No test email was sent.
+
+Registration and recovery now share an eight-character minimum. Manual bank
+configuration preserves leading zeroes, requires account and holder, and rejects
+ambiguous duplicate method names in the UI. Load/delete errors are shown instead
+of silently hiding failed operations. No real bank method was created: the owner
+must supply bank, account type, holder and actual account number. Public email
+delivery remains pending a controlled inbox and production-ready SMTP setup.

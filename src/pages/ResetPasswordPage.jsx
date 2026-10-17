@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useSEO } from '../hooks'
+import { MIN_PASSWORD_LENGTH, passwordError } from '../lib/authValidation'
 
 export default function ResetPasswordPage() {
   useSEO({ title: 'Nueva contraseña', description: 'Define una nueva contraseña para RyffasRD.' })
@@ -14,8 +15,8 @@ export default function ResetPasswordPage() {
 
   async function submit(event) {
     event.preventDefault()
-    if (password.length < 8) return setError('La contraseña debe tener al menos 8 caracteres.')
-    if (password !== confirmation) return setError('Las contraseñas no coinciden.')
+    const validationError = passwordError(password, confirmation)
+    if (validationError) return setError(validationError)
     setLoading(true)
     setError('')
     try {
@@ -35,9 +36,9 @@ export default function ResetPasswordPage() {
         <p>Utiliza al menos 8 caracteres.</p>
         <form onSubmit={submit}>
           <label>Nueva contraseña</label>
-          <input type="password" value={password} onChange={event => setPassword(event.target.value)} required />
+          <input type="password" minLength={MIN_PASSWORD_LENGTH} value={password} onChange={event => setPassword(event.target.value)} required />
           <label>Confirmar contraseña</label>
-          <input type="password" value={confirmation} onChange={event => setConfirmation(event.target.value)} required />
+          <input type="password" minLength={MIN_PASSWORD_LENGTH} value={confirmation} onChange={event => setConfirmation(event.target.value)} required />
           {error && <div className="form-error">{error}</div>}
           <button className="btn-primary auth-submit" disabled={loading}>{loading ? 'Guardando...' : 'Guardar contraseña'}</button>
         </form>
