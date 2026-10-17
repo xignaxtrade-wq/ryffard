@@ -61,6 +61,7 @@ alter table public.rifas add constraint rifas_category_valid check (category in 
   'travel', 'appliances', 'experiences', 'charity', 'other'
 ));
 
+alter table public.rifas add column if not exists is_test boolean not null default false;
 alter table public.rifas enable row level security;
 drop policy if exists "Owners manage rifas" on public.rifas;
 drop policy if exists "Public view active"  on public.rifas;
@@ -315,7 +316,7 @@ using (
     select 1
     from public.tickets t
     join public.rifas r on r.id = t.rifa_id
-    where t.receipt_url = name and r.user_id = (select auth.uid())
+    where t.receipt_url = storage.objects.name and r.user_id = (select auth.uid())
   )
 );
 
@@ -480,6 +481,7 @@ as $$
     'created_at', t.created_at,
     'rifa', jsonb_build_object(
       'name', r.name,
+      'is_test', r.is_test,
       'slug', r.slug,
       'prize1', r.prize1,
       'sorteo_date', r.sorteo_date,
@@ -494,6 +496,7 @@ as $$
   join public.rifas r on r.id = t.rifa_id
   join public.profiles p on p.id = r.user_id
   where t.ticket_code = upper(trim(p_ticket_code))
+    and (not r.is_test or r.user_id = auth.uid())
   limit 1;
 $$;
 
@@ -657,6 +660,14 @@ for insert to anon, authenticated with check (
 update storage.buckets set file_size_limit = 8388608,
   allowed_mime_types = array['image/jpeg','image/png','image/webp','image/gif','application/pdf']
 where id = 'payment-receipts';
+drop policy if exists "Organizadores ven sus comprobantes" on storage.objects;
+create policy "Organizadores ven sus comprobantes" on storage.objects
+for select to authenticated using (
+  bucket_id = 'payment-receipts' and exists (
+    select 1 from public.tickets t join public.rifas r on r.id = t.rifa_id
+    where t.receipt_url = storage.objects.name and r.user_id = (select auth.uid())
+  )
+);
 
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
@@ -921,6 +932,7 @@ as $$
     'created_at', t.created_at,
     'rifa', jsonb_build_object(
       'name', r.name,
+      'is_test', r.is_test,
       'slug', r.slug,
       'prize1', r.prize1,
       'sorteo_date', r.sorteo_date,

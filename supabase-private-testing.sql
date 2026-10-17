@@ -94,6 +94,7 @@ as $$
     'created_at', t.created_at,
     'rifa', jsonb_build_object(
       'name', r.name,
+      'is_test', r.is_test,
       'slug', r.slug,
       'prize1', r.prize1,
       'sorteo_date', r.sorteo_date,

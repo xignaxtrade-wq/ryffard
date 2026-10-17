@@ -59,7 +59,7 @@ export default function TicketVerificationPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, marginBottom: 26 }}>
             <div>
               <p style={{ marginBottom: 6, color: 'var(--text-secondary)', fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 }}>Ticket digital RyffasRD</p>
-              <h1 style={{ color: 'var(--dark)', fontSize: 27, margin: 0 }}>Ticket auténtico</h1>
+              <h1 style={{ color: 'var(--dark)', fontSize: 27, margin: 0 }}>{ticket.rifa?.is_test ? 'Ticket de PRUEBA' : 'Ticket auténtico'}</h1>
             </div>
             {ticket.organizer?.brand_logo_url && <img src={ticket.organizer.brand_logo_url} alt="Logo del organizador" style={{ width: 54, height: 54, borderRadius: 8, objectFit: 'cover' }} />}
           </div>
@@ -83,7 +83,7 @@ export default function TicketVerificationPage() {
               ['Premio principal', ticket.rifa?.prize1],
               ['Organizador', ticket.organizer?.brand_name],
               ['Fecha de sorteo', drawDate],
-              ['Comprobante', ticket.receipt_uploaded ? 'Recibido y pendiente de revisión' : 'Aún no cargado'],
+              ['Comprobante', ticket.receipt_uploaded ? (ticket.status === 'paid' ? 'Recibido - pago confirmado' : ticket.status === 'cancelled' ? 'Recibido - ticket cancelado' : 'Recibido y pendiente de revisión') : 'Aún no cargado'],
             ].map(([label, value]) => <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, borderBottom: '1px solid var(--border)', paddingBottom: 12 }}><dt style={{ color: 'var(--text-secondary)', fontSize: 14 }}>{label}</dt><dd style={{ margin: 0, textAlign: 'right', color: 'var(--dark)', fontSize: 14, fontWeight: 700 }}>{value || '—'}</dd></div>)}
           </dl>
 

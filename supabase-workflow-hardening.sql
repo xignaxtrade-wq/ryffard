@@ -28,6 +28,14 @@ for insert to anon, authenticated with check (
 update storage.buckets set file_size_limit = 8388608,
   allowed_mime_types = array['image/jpeg','image/png','image/webp','image/gif','application/pdf']
 where id = 'payment-receipts';
+drop policy if exists "Organizadores ven sus comprobantes" on storage.objects;
+create policy "Organizadores ven sus comprobantes" on storage.objects
+for select to authenticated using (
+  bucket_id = 'payment-receipts' and exists (
+    select 1 from public.tickets t join public.rifas r on r.id = t.rifa_id
+    where t.receipt_url = storage.objects.name and r.user_id = (select auth.uid())
+  )
+);
 
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$

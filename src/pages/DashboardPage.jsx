@@ -203,6 +203,7 @@ function MyRifas({ rifas, setActive, setTicketRifa, setSorteoRifa }) {
                       <i className="fas fa-shuffle" style={{ marginRight: 4 }} />Realizar Sorteo
                     </button>
                   )}
+                  {r.status === 'completed' && <button onClick={() => { setSorteoRifa(r); setActive('sorteo') }} style={{ gridColumn: 'span 2' }}>Ver resultado</button>}
                 </div>
               </div>
             </div>
@@ -342,7 +343,7 @@ function TicketsPanel({ rifa, setActive, onChanged }) {
       </div>
 
       {/* Bloqueo Manual */}
-      <div style={{ background: 'var(--card)', borderRadius: 16, padding: 20, boxShadow: 'var(--shadow)', marginBottom: 20, border: `1px solid ${C.primary}30` }}>
+      {rifa.status === 'active' && <div style={{ background: 'var(--card)', borderRadius: 16, padding: 20, boxShadow: 'var(--shadow)', marginBottom: 20, border: `1px solid ${C.primary}30` }}>
         <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--dark)', marginBottom: 12 }}><i className="fas fa-lock" style={{ color: C.primary, marginRight: 8 }}/>Bloquear Número Manualmente</h3>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <div style={{ flex: '1 1 120px' }}>
@@ -357,7 +358,7 @@ function TicketsPanel({ rifa, setActive, onChanged }) {
             {manualLoading ? 'Bloqueando...' : 'Ocupar y Marcar Pagado'}
           </button>
         </div>
-      </div>
+      </div>}
 
       <div style={{ background: 'var(--card)', borderRadius: 16, boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
         {loading ? (
@@ -406,13 +407,13 @@ function TicketsPanel({ rifa, setActive, onChanged }) {
                   </td>
                   <td style={{ padding: '12px 16px' }}>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      {t.status === 'reserved' && (
+                      {rifa.status === 'active' && t.status === 'reserved' && (
                         <button onClick={() => updateStatus(t.id, 'paid')}
                           style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.success}`, background: 'transparent', color: C.success, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                           <i className="fas fa-check" style={{ marginRight: 4 }} />Pagado
                         </button>
                       )}
-                      {t.status !== 'cancelled' && (
+                      {rifa.status === 'active' && t.status !== 'cancelled' && (
                         <button onClick={() => updateStatus(t.id, 'cancelled')}
                           style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.secondary}`, background: 'transparent', color: C.secondary, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                           <i className="fas fa-times" style={{ marginRight: 4 }} />Cancelar
@@ -443,6 +444,12 @@ function SorteoPanel({ rifa, setActive, onDone }) {
   useEffect(() => {
     supabase.from('tickets').select('numero, buyer_name').eq('rifa_id', rifa.id).eq('status', 'paid')
       .then(({ data }) => setTickets(data || []))
+    if (rifa.status === 'completed') {
+      supabase.from('sorteos').select('winner, prize2, prize3, draw_hash').eq('rifa_id', rifa.id).maybeSingle()
+        .then(({ data }) => {
+          if (data) { setGanadores(data); setDone(true) }
+        })
+    }
   }, [rifa])
 
   useEffect(() => {

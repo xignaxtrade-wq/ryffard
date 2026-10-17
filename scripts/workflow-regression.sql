@@ -73,6 +73,16 @@ begin
   perform pg_temp.expect_error(format('select public.attach_ticket_receipt(array[%L::uuid,%L::uuid],%L,%L)',t.id,t2.id,t.ticket_code,path),'misma reserva','Mixed-order receipt rejected');
   perform public.attach_ticket_receipt(order_ids,t.ticket_code,path);
   perform pg_temp.check_true((select count(*)=2 from public.tickets where id=any(order_ids) and receipt_url=path),'Receipt linked to the complete order');
+  set local role authenticated;
+  select exists(select 1 from storage.objects where bucket_id='payment-receipts' and name=path) into visible_test;
+  reset role;
+  perform pg_temp.check_true(visible_test,'Owner can SELECT receipt through actual Storage RLS');
+  perform set_config('request.jwt.claim.sub', other_id::text, true);
+  set local role authenticated;
+  select exists(select 1 from storage.objects where bucket_id='payment-receipts' and name=path) into visible_test;
+  reset role;
+  perform pg_temp.check_true(not visible_test,'Other organizer cannot SELECT private receipt');
+  perform set_config('request.jwt.claim.sub', owner_id::text, true);
 
   perform set_config('request.jwt.claim.sub', other_id::text,true);
   perform pg_temp.expect_error(format('select public.set_ticket_status(%L,''paid'')',t.id),'permiso','Other organizer cannot confirm payment');
