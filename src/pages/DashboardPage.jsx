@@ -32,7 +32,7 @@ function Sidebar({ active, setActive, profile }) {
   const brandLogo = profile?.brand_logo_url || profile?.avatar_url
   const brandColor = profile?.brand_primary_color || C.primary
   return (
-    <aside className="dashboard-sidebar" style={{ width: 260, background: '#1a1a2e', minHeight: 'calc(100vh - 80px)', padding: '32px 0', flexShrink: 0 }}>
+    <aside className="dashboard-sidebar" style={{ width: 260, background: '#1a1a2e', minHeight: '100vh', padding: '32px 0', flexShrink: 0 }}>
       <div style={{ display: 'flex', justifyContent: 'center', padding: '0 20px', marginBottom: 24 }}>
         <img src="/logo-ryffasrd.png" alt="RyffasRD - Rifas y sorteos" width="160" height="160" style={{ display: 'block', maxWidth: '100%', objectFit: 'contain' }} />
       </div>
@@ -1345,7 +1345,7 @@ export default function DashboardPage() {
   useEffect(() => { loadRifas() }, [user, isTest])
 
   return (
-    <section style={{ paddingTop: 80, minHeight: '100vh', background: 'var(--bg-alt)', paddingBottom: 70 }} className="page-enter">
+    <section style={{ minHeight: '100vh', background: 'var(--bg-alt)', paddingBottom: 70 }} className="page-enter">
       <div style={{ display: 'flex' }}>
         <Sidebar active={active} setActive={setActive} profile={profile} />
         <main className="dashboard-main" style={{ flex: 1, padding: 32, overflow: 'auto' }}>
