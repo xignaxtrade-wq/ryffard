@@ -1345,7 +1345,7 @@ export default function DashboardPage() {
   useEffect(() => { loadRifas() }, [user, isTest])
 
   return (
-    <section style={{ minHeight: '100vh', background: 'var(--bg-alt)', paddingBottom: 70 }} className="page-enter dashboard-page">
+    <section style={{ minHeight: '100vh', background: 'var(--bg-alt)' }} className="page-enter dashboard-page">
       <div style={{ display: 'flex' }}>
         <Sidebar active={active} setActive={setActive} profile={profile} />
         <main className="dashboard-main" style={{ flex: 1, minWidth: 0, padding: 32, overflow: 'auto' }}>
