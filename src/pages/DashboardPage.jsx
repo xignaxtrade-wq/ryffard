@@ -33,6 +33,9 @@ function Sidebar({ active, setActive, profile }) {
   const brandColor = profile?.brand_primary_color || C.primary
   return (
     <aside className="dashboard-sidebar" style={{ width: 260, background: '#1a1a2e', minHeight: 'calc(100vh - 80px)', padding: '32px 0', flexShrink: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '0 20px', marginBottom: 24 }}>
+        <img src="/logo-ryffasrd.png" alt="RyffasRD - Rifas y sorteos" width="160" height="160" style={{ display: 'block', maxWidth: '100%', objectFit: 'contain' }} />
+      </div>
       <div style={{ padding: '0 20px', marginBottom: 32 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18, color: '#fff', fontWeight: 800, fontSize: 17 }}>
           {brandLogo
