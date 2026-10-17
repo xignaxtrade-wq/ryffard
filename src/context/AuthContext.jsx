@@ -40,15 +40,10 @@ export function AuthProvider({ children }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name } },
+      options: { data: { name, referred_by: refCode } },
     })
     if (error) throw error
 
-    if (data.user) {
-      const profileData = { id: data.user.id, name, email }
-      if (refCode) profileData.referred_by = refCode
-      await supabase.from('profiles').upsert(profileData, { onConflict: 'id' })
-    }
     return data
   }
 

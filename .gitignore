@@ -36,3 +36,4 @@ SORTEOSRD2/
 # Claude Code internal files
 .claude/
 .vercel
+tmp/

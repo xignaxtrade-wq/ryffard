@@ -15,7 +15,7 @@ describe('computeCuadre', () => {
     )
 
     expect(result.totales.recaudado_confirmado).toBe(150)
-    expect(result.totales.pendiente_por_confirmar).toBe(150)
+    expect(result.totales.pendiente_por_confirmar).toBe(0)
     expect(result.por_metodo.Banco).toEqual({ tickets: 1, monto: 150 })
     expect(result.discrepancias.map(item => item.tipo)).toEqual([
       'contador_desincronizado',
@@ -32,5 +32,20 @@ describe('computeCuadre', () => {
 
     expect(result.rifas[0].pagados_sin_metodo).toBe(1)
     expect(result.por_metodo['Sin método registrado'].monto).toBe(100)
+  })
+
+  it('solo cuenta reservas vigentes como ingresos pendientes', () => {
+    const now = Date.now()
+    const result = computeCuadre(
+      [{ id: 'r1', name: 'Rifa', status: 'active', price: 200, total: 10, sold: 0 }],
+      [
+        { rifa_id: 'r1', status: 'reserved', expires_at: new Date(now + 60000).toISOString() },
+        { rifa_id: 'r1', status: 'reserved', expires_at: new Date(now - 60000).toISOString() },
+        { rifa_id: 'r1', status: 'cancelled' },
+      ],
+    )
+    expect(result.totales.pendiente_por_confirmar).toBe(200)
+    expect(result.totales.tickets_reservados).toBe(1)
+    expect(result.rifas[0].reservas_vencidas).toBe(1)
   })
 })

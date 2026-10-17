@@ -34,7 +34,7 @@ export default function RifaPage() {
   const [paymentMethods, setPaymentMethods] = useState([]) // full objects { id, name, type, details }
   const [activeImage, setActiveImage]       = useState(null)
   const { user } = useAuth()
-  const isAdmin = user && rifa && user.id === rifa.user_id
+  const isAdmin = user && rifa && user.id === rifa.user_id && !rifa.is_test
 
   useSEO({
     title: rifa ? rifa.name : 'Rifa',
@@ -45,6 +45,12 @@ export default function RifaPage() {
   })
 
   useEffect(() => { loadRifa() }, [slug])
+
+  useEffect(() => {
+    if (step !== 'grid') return
+    const timer = setInterval(() => loadRifa(true), 30000)
+    return () => clearInterval(timer)
+  }, [slug, step])
 
   useEffect(() => {
     let cancelled = false
@@ -60,11 +66,11 @@ export default function RifaPage() {
     return () => { cancelled = true }
   }, [reservedTickets])
 
-  async function loadRifa() {
-    setLoading(true)
-    setError('')
+  async function loadRifa(silent = false) {
+    if (!silent) { setLoading(true); setError('') }
     const { data, error: requestError } = await supabase.rpc('public_rifa_details', { p_slug: slug })
     if (requestError || !data?.rifa) {
+      if (silent) return
       setError('Rifa no encontrada o no disponible')
       setLoading(false)
       return
@@ -76,11 +82,16 @@ export default function RifaPage() {
     const map = {}
     data.tickets?.forEach(t => { map[t.numero] = t.status })
     setTickets(map)
+    setSelected(prev => prev.filter(n => !map[n]))
     setLoading(false)
   }
 
   function toggleNum(n) {
     if (tickets[n] === 'reserved' || tickets[n] === 'paid') return
+    if (!selected.includes(n) && selected.length >= 100) {
+      setSubmitError('Solo puedes reservar hasta 100 numeros a la vez')
+      return
+    }
     setSelected(prev =>
       prev.includes(n) ? prev.filter(x => x !== n) : [...prev, n]
     )
@@ -121,16 +132,16 @@ export default function RifaPage() {
     setSubmitError('')
     setSubmitting(true)
     try {
-      for (const number of selected) {
-        const { error: blockError } = await supabase.rpc('admin_block_ticket', {
-          p_rifa_id: rifa.id,
-          p_number: number,
-          p_buyer_name: 'Bloqueado por Admin',
-        })
-        if (blockError) throw blockError
-      }
+      const { error: blockError } = await supabase.rpc('reserve_tickets', {
+        p_rifa_id: rifa.id,
+        p_numbers: selected,
+        p_buyer_name: 'Reservado por organizador',
+        p_buyer_phone: orgPhone || 'N/A',
+        p_payment_method: paymentMethods[0]?.name || null,
+      })
+      if (blockError) throw blockError
 
-      alert(`Se han bloqueado y marcado como pagados ${selected.length} número(s).`)
+      alert(`Se han reservado ${selected.length} numero(s). El pago se confirma desde el panel.`)
       setSelected([])
       setStep('grid')
       loadRifa()
@@ -146,6 +157,7 @@ export default function RifaPage() {
   }
 
   function buildWhatsApp() {
+    if (rifa.is_test) return '#'
     const nums  = reservedNums.map(n => `#${String(n).padStart(4,'0')}`).join(', ')
     const total = fmt(reservedNums.length * rifa.price)
     const m     = getSelectedMethod()
@@ -173,7 +185,7 @@ export default function RifaPage() {
 
   async function handleReceiptUpload() {
     if (!receiptFile || !reservedTickets.length) return
-    const accepted = receiptFile.type.startsWith('image/') || receiptFile.type === 'application/pdf'
+    const accepted = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'].includes(receiptFile.type)
     if (!accepted || receiptFile.size > 8 * 1024 * 1024) {
       setReceiptState({ status: 'error', message: 'Sube una imagen o PDF de hasta 8 MB.' })
       return
@@ -311,11 +323,12 @@ export default function RifaPage() {
           </div>
         )}
 
-        <a href={buildWhatsApp()} target="_blank" rel="noreferrer"
+        {!rifa.is_test && <a href={buildWhatsApp()} target="_blank" rel="noreferrer"
           style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#25d366', color: '#fff', padding: '14px 28px', borderRadius: 12, fontWeight: 700, fontSize: 16, textDecoration: 'none', marginBottom: 16 }}>
           <i className="fab fa-whatsapp" style={{ fontSize: 22 }} />
           Confirmar pago por WhatsApp
-        </a>
+        </a>}
+        {rifa.is_test && <p role="status">PRUEBA PRIVADA - Sin pago ni premio real</p>}
         <br />
         <button onClick={() => { setStep('grid'); setSelected([]); loadRifa() }}
           style={{ marginTop: 8, background: 'none', border: 'none', color: C.primary, cursor: 'pointer', fontSize: 14, fontWeight: 600 }}>

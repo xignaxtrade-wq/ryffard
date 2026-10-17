@@ -36,7 +36,7 @@ export const PLANS = [
   {
     id: 'demo',
     price: 0,
-    label: 'Demo',
+    label: 'Gratis',
     period: '7 días',
     featured: false,
     maxTickets: 50,

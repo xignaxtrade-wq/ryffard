@@ -45,7 +45,7 @@ export default function PricingPage() {
                 ))}
               </ul>
               <button onClick={() => navigate(plan.id === 'demo' ? '/dashboard' : '/register')} className={plan.featured ? 'btn-outline' : 'btn-primary'} style={{ width: '100%', padding: '16px', borderRadius: 14, fontSize: 16, fontWeight: 800, background: plan.featured ? '#fff' : C.primary, color: plan.featured ? C.primary : '#fff', border: 'none', cursor: 'pointer', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
-                {plan.id === 'demo' ? 'Probar demo' : `Comprar ${plan.label}`}
+                {plan.id === 'demo' ? 'Comenzar gratis' : `Comprar ${plan.label}`}
               </button>
             </div>
           ))}

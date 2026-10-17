@@ -46,9 +46,9 @@ export default function HistoryPage() {
         <div className="history-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 48 }}>
           {[
             { icon: 'fa-trophy',       label: 'Sorteos Realizados', value: sorteos.length,                   color: C.warning },
-            { icon: 'fa-users',        label: 'Ganadores Totales',  value: sorteos.length * 3,               color: C.primary },
+            { icon: 'fa-users',        label: 'Ganadores Totales',  value: sorteos.reduce((n, s) => n + [s.winner, s.prize2, s.prize3].filter(Boolean).length, 0), color: C.primary },
             { icon: 'fa-ticket',       label: 'Tickets Sorteados',  value: totalTickets.toLocaleString(),     color: C.success },
-            { icon: 'fa-circle-check', label: 'Certificados',       value: '100%',                           color: C.accent  },
+            { icon: 'fa-circle-check', label: 'Huellas registradas', value: sorteos.filter(s => s.draw_hash).length, color: C.accent },
           ].map((s, i) => (
             <div key={i} style={{ background: 'var(--card)', borderRadius: 16, padding: 20, textAlign: 'center', boxShadow: 'var(--shadow)', opacity: visible ? 1 : 0, animation: visible ? `fadeInUp 0.5s ease-out ${i * 0.1}s both` : 'none' }}>
               <div style={{ width: 40, height: 40, borderRadius: '50%', background: `${s.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
@@ -88,7 +88,7 @@ export default function HistoryPage() {
                 )}
               </div>
               <div style={{ background: 'rgba(0,200,83,0.1)', padding: '6px 14px', borderRadius: 50, fontSize: 12, fontWeight: 700, color: C.success, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <i className="fas fa-circle-check" /> Verificado
+                <i className="fas fa-circle-check" /> Registrado
               </div>
             </div>
 

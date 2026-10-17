@@ -10,8 +10,9 @@ export function computeCuadre(rifas, tickets) {
   const byRifa = rifas.map((r) => {
     const ts = tickets.filter((t) => t.rifa_id === r.id)
     const paid = ts.filter((t) => t.status === 'paid')
-    const reserved = ts.filter((t) => t.status === 'reserved')
-    const expired = reserved.filter((t) => t.expires_at && new Date(t.expires_at) < now)
+    const allReserved = ts.filter((t) => t.status === 'reserved')
+    const expired = allReserved.filter((t) => t.expires_at && new Date(t.expires_at) <= now)
+    const reserved = allReserved.filter((t) => !t.expires_at || new Date(t.expires_at) > now)
     const cancelled = ts.filter((t) => t.status === 'cancelled')
     return {
       id: r.id,

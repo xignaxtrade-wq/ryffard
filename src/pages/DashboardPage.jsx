@@ -40,7 +40,7 @@ function Sidebar({ active, setActive, profile }) {
           <div style={{ width: 40, height: 40, borderRadius: '50%', background: C.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 18 }}>{initial}</div>
           <div>
             <div style={{ color: '#fff', fontSize: 14, fontWeight: 600 }}>{profile?.name || 'Usuario'}</div>
-            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>Plan {profile?.plan === 'pro' ? 'Pro ✓' : 'Gratis'}</div>
+            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>Plan {PLANS.find(plan => plan.id === profile?.plan)?.label || 'Gratis'}</div>
           </div>
         </div>
       </div>
@@ -187,6 +187,7 @@ function MyRifas({ rifas, setActive, setTicketRifa, setSorteoRifa }) {
 
                 {/* Botones de acción */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  {r.status === 'active' && <a href={`/rifa/${r.slug}`} style={{ gridColumn: 'span 2', color: C.primary }}>Abrir talonario</a>}
                   <button onClick={() => copyLink(r.slug)}
                     style={{ padding: '8px', borderRadius: 8, border: `1px solid ${C.primary}`, background: 'transparent', color: C.primary, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                     <i className={`fas ${copied === r.slug ? 'fa-check' : 'fa-copy'}`} style={{ marginRight: 4 }} />
@@ -220,7 +221,7 @@ function MyRifas({ rifas, setActive, setTicketRifa, setSorteoRifa }) {
 }
 
 // ── Tickets Panel ─────────────────────────────────────────────────────────────
-function TicketsPanel({ rifa, setActive }) {
+function TicketsPanel({ rifa, setActive, onChanged }) {
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter]   = useState('all')
@@ -250,6 +251,7 @@ function TicketsPanel({ rifa, setActive }) {
       return
     }
     setTickets(prev => prev.map(t => t.id === id ? { ...t, status } : t))
+    onChanged()
   }
 
   async function openReceipt(ticket) {
@@ -272,7 +274,7 @@ function TicketsPanel({ rifa, setActive }) {
       return
     }
     // Verificar si ya está ocupado
-    const existing = tickets.find(t => t.numero === num && t.status !== 'cancelled')
+    const existing = tickets.find(t => t.numero === num && (t.status === 'paid' || (t.status === 'reserved' && new Date(t.expires_at) > new Date())))
     if (existing) {
       alert(`El número ${num} ya está ocupado por ${existing.buyer_name}`)
       setManualLoading(false)
@@ -280,7 +282,7 @@ function TicketsPanel({ rifa, setActive }) {
     }
     
     // Insertar
-    const { data, error } = await supabase.rpc('admin_block_ticket', {
+    const { error } = await supabase.rpc('admin_block_ticket', {
       p_rifa_id: rifa.id,
       p_number: num,
       p_buyer_name: manualName,
@@ -289,7 +291,8 @@ function TicketsPanel({ rifa, setActive }) {
     if (error) {
       alert('Error al bloquear número: ' + error.message)
     } else {
-      setTickets(prev => [...prev, data].sort((a,b) => a.numero - b.numero))
+      await loadTickets()
+      onChanged()
       setManualNumber('')
       setManualName('')
     }
@@ -690,7 +693,7 @@ function Referrals({ profile }) {
 }
 
 // ── Create ────────────────────────────────────────────────────────────────────
-function CreateRifa({ setActive, onCreated, user, profile, rifas }) {
+function CreateRifa({ setActive, onCreated, user, profile, rifas, isTest }) {
   const [form, setForm]       = useState({ name: '', category: '', description: '', prize1: '', prize2: '', prize3: '', price: '', total: '', sorteo_date: '' })
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
@@ -765,7 +768,8 @@ function CreateRifa({ setActive, onCreated, user, profile, rifas }) {
 
       const { error: err } = await supabase.from('rifas').insert({
         user_id:     user.id,
-        name:        form.name,
+        name:        isTest ? 'PRUEBA - ' + form.name : form.name,
+        is_test:     isTest,
         category:    form.category,
         description: form.description || null,
         prize1:      form.prize1,
@@ -773,7 +777,7 @@ function CreateRifa({ setActive, onCreated, user, profile, rifas }) {
         prize3:      form.prize3 || null,
         price:       parseFloat(form.price),
         total:       parseInt(form.total),
-        sorteo_date: form.sorteo_date || null,
+        sorteo_date: form.sorteo_date ? new Date(form.sorteo_date).toISOString() : null,
         image_url,
         gallery_urls,
         slug,
@@ -839,8 +843,8 @@ function CreateRifa({ setActive, onCreated, user, profile, rifas }) {
             </div>
           </div>
 
-          <div style={{ marginBottom: 20 }}>{lbl('Fecha del Sorteo')}
-            <input type="date" value={form.sorteo_date} onChange={e => setF('sorteo_date', e.target.value)} style={IS} />
+          <div style={{ marginBottom: 20 }}>{lbl('Fecha y hora del Sorteo')}
+            <input type="datetime-local" value={form.sorteo_date} onChange={e => setF('sorteo_date', e.target.value)} style={IS} />
           </div>
 
           {/* Imágenes */}
@@ -1297,6 +1301,7 @@ function BottomNav({ active, setActive }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { user, profile } = useAuth()
+  const [isTest, setIsTest] = useState(false)
   const [active, setActive]       = useState('overview')
   const [rifas, setRifas]         = useState([])
   const [ticketRifa, setTicketRifa] = useState(null)
@@ -1304,25 +1309,36 @@ export default function DashboardPage() {
 
   async function loadRifas() {
     if (!user) return
-    const { data } = await supabase.from('rifas').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+    const { data } = await supabase.from('rifas').select('*').eq('user_id', user.id).eq('is_test', isTest).order('created_at', { ascending: false })
     setRifas(data || [])
   }
 
-  useEffect(() => { loadRifas() }, [user])
+  useEffect(() => { loadRifas() }, [user, isTest])
 
   return (
     <section style={{ paddingTop: 80, minHeight: '100vh', background: 'var(--bg-alt)', paddingBottom: 70 }} className="page-enter">
       <div style={{ display: 'flex' }}>
         <Sidebar active={active} setActive={setActive} profile={profile} />
         <main className="dashboard-main" style={{ flex: 1, padding: 32, overflow: 'auto' }}>
+          <label style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 20 }}>
+            <input type="checkbox" checked={isTest} onChange={event => {
+              setIsTest(event.target.checked)
+              setRifas([])
+              setTicketRifa(null)
+              setSorteoRifa(null)
+              setActive('overview')
+            }} />
+            Entorno de prueba privado
+          </label>
+          {isTest && <div role="status" style={{ padding: 12, marginBottom: 20, border: '1px solid #FFC400', background: '#fff8d6', color: '#222' }}>PRUEBA · Sin cobros reales · Solo visible para tu cuenta</div>}
           {active === 'overview'  && <Overview  rifas={rifas} setActive={setActive} profile={profile} />}
           {active === 'rifas'     && <MyRifas   rifas={rifas} setActive={setActive} setTicketRifa={setTicketRifa} setSorteoRifa={setSorteoRifa} />}
-          {active === 'tickets'   && ticketRifa && <TicketsPanel rifa={ticketRifa} setActive={setActive} />}
+          {active === 'tickets'   && ticketRifa && <TicketsPanel rifa={ticketRifa} setActive={setActive} onChanged={loadRifas} />}
           {active === 'sorteo'    && sorteoRifa && <SorteoPanel  rifa={sorteoRifa} setActive={setActive} onDone={loadRifas} />}
           {active === 'cuadre'    && <CuadreIA user={user} rifas={rifas} />}
           {active === 'referrals' && <Referrals profile={profile} />}
-          {active === 'payments'  && <PaymentMethods user={user} />}
-          {active === 'create'    && <CreateRifa setActive={setActive} onCreated={loadRifas} user={user} profile={profile} rifas={rifas} />}
+          {active === 'payments'  && (isTest ? <p>PRUEBA - Sin cobro</p> : <PaymentMethods user={user} />)}
+          {active === 'create'    && <CreateRifa key={String(isTest)} isTest={isTest} setActive={setActive} onCreated={loadRifas} user={user} profile={profile} rifas={rifas} />}
           {active === 'myplan'    && <MyPlanPanel profile={profile} />}
           {active === 'brand'     && <WhiteLabelSettings profile={profile} />}
           {active === 'settings'  && <Settings  profile={profile} />}
